@@ -1,0 +1,21 @@
+{
+  "name": "pindou-studio",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "test": "node --test",
+    "build": "node build-auth.mjs",
+    "prestart": "node build-auth.mjs",
+    "predev": "node build-auth.mjs",
+    "pretest": "node build-auth.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "11.1.6"
+  }
+}

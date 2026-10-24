@@ -1,0 +1,11 @@
+node_modules/
+.local/
+.env
+.env.*
+!.env.example
+server/studio-html.mjs
+server/admin-html.mjs
+/*.zip
+/豆格*.html
+/index-mobile.html
+/bead-source.txt
