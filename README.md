@@ -12,7 +12,7 @@
 2. 构建设置由 `netlify.toml` 提供：Node 22；构建命令 `node build-auth.mjs`；发布目录 `public`；Functions 目录 `netlify/functions`。平台先按 lockfile 安装依赖。
 3. 在 Netlify 的环境变量中，**私下填写**以下值，确保对 Functions 运行时和 Production 环境生效：
    - `ADMIN_USERNAME`：管理员账号，默认 `admin`；3–32 位英文字母、数字、点、横线或下划线，不区分大小写。
-   - `ADMIN_PASSWORD`：管理员密码，12–128 个字符。
+   - `ADMIN_PASSWORD`：管理员密码，8–128 个字符。
    - `SESSION_SECRET`：至少 32 位随机字符，用于签名会话，不与密码重复。
 4. 重新构建部署。在 Functions 页面确认 `auth`、`users`、`studio`、`admin` 已部署。生产环境运行需 HTTPS。
 5. 打开网站，使用上述管理员账号登录，进入账号管理，添加独立用户，再将账号和初始密码通过可信渠道告知对方。
