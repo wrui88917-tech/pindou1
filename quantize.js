@@ -29,3 +29,11 @@ export function reducePalette(cells,limit){
  return cells.map(c=>palette.reduce((best,p)=>distance(c,p)<distance(c,best)?p:best));
 }
 function distance(a,b){return a.reduce((s,v,i)=>s+(v-b[i])**2,0);}
+
+// Local, deterministic labels for this chart; these are not brand bead color codes.
+export function suggestColorNumbers(keys){
+ const rank=key=>{const rgb=key.split(',').map(Number),[r,g,b]=rgb.map(v=>v/255),max=Math.max(r,g,b),min=Math.min(r,g,b),delta=max-min;let hue=0;if(delta){hue=max===r?((g-b)/delta)%6:max===g?(b-r)/delta+2:(r-g)/delta+4;hue=(hue*60+360)%360;}const neutral=delta<.08||max===0;const light=.2126*r+.7152*g+.0722*b;return [neutral?0:1,neutral?0:Math.floor(hue/30),light,hue,...rgb];};
+ const entries=[...new Set(keys)].map(key=>({key,rank:rank(key)}));
+ entries.sort((a,b)=>{for(let i=0;i<a.rank.length;i++){const difference=a.rank[i]-b.rank[i];if(difference)return difference;}return 0;});
+ return new Map(entries.map(({key},i)=>[key,String(i+1)]));
+}
