@@ -1,6 +1,6 @@
 # 豆格 · 拼豆工作室（账号登录版）
 
-照片转纯色拼豆网格，支持坐标、可编辑色号、用量清单、PNG/CSV 导出、裁剪、电脑滚轮和手机双指缩放。每格按多数颜色取色，不混色；照片在浏览器本地处理，不上传服务器。
+照片转纯色拼豆网格，支持坐标、可编辑色号、用量清单、PNG/CSV 导出、裁剪、电脑滚轮和手机双指缩放。每格按多数颜色取色，不混色；普通转拼豆在浏览器本地处理；选择 AI 改绘并同意后，照片才会经服务器发送给所选模型平台。
 
 本版本增加服务端登录保护：未登录时不会返回工具 HTML。每个人有独立账号，只允许管理员创建；无公开注册。管理员可以停用/启用账号、重置密码。用户无权操作账号管理接口。退出登录会撤销服务端会话，停用和密码重置会使该用户原有会话失效。工具顶部含退出登录按钮。
 
@@ -71,3 +71,53 @@ npm start
 参考数据来自 [Bitbead palettes.json](https://github.com/pomodiary/bitbead.app/blob/main/data/palettes.json)，许可 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)，本项目仅提取 MARD 221 条目并添加分组及 RGB 字段。其 HEX 来自供应商色样与产品图片，为参考色值，不是厂商认证测量值；屏幕与实物可能有色差。色卡数据打包在本地，无需联网请求。
 
 底部用量清单优先使用当前编辑编号；图内编号留空时，仍显示对应 MARD 或扩展色卡编号，CSV 同样保留该编号。原图取色中没有色卡对应关系的空编号仍显示“—”，不虚构品牌色号。格内编号开关与底部清单开关互相独立。
+
+## AI 漫画 → 拼豆图（可选）
+
+上传照片 → 选择清新日漫、可爱 Q 版或简洁漫画 → 勾选照片发送同意 → 生成 AI 漫画 → 预览、放大或下载 → 点击“用漫画生成拼豆图”。原照片保留在当前浏览器，可随时切回。AI 输出仍通过原有多数色取色、配色编号和坐标流程生成每格纯色的图纸。
+
+在现有 Netlify 项目的环境变量中私下添加所选平台的 API 密钥，标记为机密，并使其在 Functions / Production 范围生效，然后重新部署。至少配置一个平台即可。密钥应有相应图像编辑模型调用权限及 API 可用额度。聊天产品订阅或免费聊天不代表拥有图像 API 额度。不要把密钥放进仓库、公开配置或聊天；没有配置时，页面明确禁用 AI，但普通拼豆流程可继续使用。
+
+可选配置：
+
+| 变量 | 默认值 | 含义 |
+| --- | --- | --- |
+| `OPENAI_IMAGE_MODEL` | `gpt-image-1.5` | 支持 `gpt-image-1.5`、`gpt-image-1`、`gpt-image-2` |
+| `AI_DAILY_LIMIT` | `10` | 每账号每天最多创建的任务数，允许 1–100 |
+| `AI_SITE_DAILY_LIMIT` | `50` | 全站每天最多创建的任务数，允许 1–1000 |
+
+额度按 UTC 日期重置，计数为创建尝试，失败任务也可能占用次数；防止并发突破限制采用强一致条件写。API 费用由所选平台密钥对应的账号承担，建议另设提供方预算上限。
+
+OpenAI 适配器使用服务端 `POST /v1/images/edits`，有登录与来源校验，仅接收固定风格和经用户同意的图片；浏览器按最长边 1280 压缩，服务器校验 MIME、文件签名和大小。密钥不返回前端。转换在 `cartoon-background` Background Function 中执行，避免同步函数等待数分钟超时。浏览器通过 `/api/cartoon?id=...` 查询本人任务，其他用户（包括其他管理员会话）不能读取这张照片。后台调用用服务端签名校验，任务只会被领取一次，避免重复付费调用。
+
+AI 任务使用站点级私有 Netlify Blobs `bead-cartoon-jobs`。任务有效 30 分钟，成功/失败后移除上传源图，浏览器接收成功图片后请求删除任务。每小时的 `cartoon-cleanup` Scheduled Function 清理过期任务及超过 7 天的计数；在定时函数正常运行时，未领取或未取回的临时图片最长可保留约 90 分钟。各 AI 提供方的数据处理和保留由其 API 政策决定，Netlify 本地删除并不代表提供方也即时删除。
+
+部署后确认新增 Functions `cartoon`、`cartoon-background`、`cartoon-cleanup` 成功发布，定时任务需要发布到生产环境才会执行。工作室页面显示 API 未启用时，先检查密钥是否保存到 Functions 和当前部署环境并重新部署。
+
+已执行的自动化覆盖登录/同意门槛、图片输入校验、异步任务和隔离、后台签名、并发去重、额度、失败与清理、图像编辑请求格式，以及桌面和手机上从上传到拼豆的完整衔接。AI 接口使用模拟响应；未配置真实 API 密钥，未宣称模型出图质量、真实计费或线上 Background Function 调度已验证。
+
+
+## 千问与豆包接入
+
+网页 AI 平台选择器支持千问、豆包和 OpenAI；仅启用已配置密钥的平台，默认优先千问、其次豆包、最后 OpenAI。切换平台会清除照片发送同意，必须针对新平台重新确认。每条任务记录创建时选择的平台，后台不自动切换或回退到其他供应商；旧浏览器请求未传平台时仍按 OpenAI 处理，避免把原本只同意发送给 OpenAI 的照片转交其他提供方。
+
+只开通一个平台即可，无需两个平台同时付费。平台的免费试用、模型授权、实名认证与额度以对应控制台为准，不承诺永久免费。Netlify 服务器负责调用平台，手机不直接访问模型接口，但地区、平台账号权限和部署服务器网络仍会影响可用性。
+
+| 平台 | 在 Netlify 私下填写的机密变量 | 默认模型 | 可选配置 |
+| --- | --- | --- | --- |
+| 千问图像编辑（阿里云百炼） | `DASHSCOPE_API_KEY` | `qwen-image-edit-plus` | `DASHSCOPE_IMAGE_MODEL`；`DASHSCOPE_REGION=cn`（默认北京）或 `intl`（新加坡，需匹配区域密钥） |
+| 豆包（火山方舟） | `ARK_API_KEY` | `doubao-seedream-4-0-250828` | `ARK_IMAGE_MODEL` 可填在方舟已开通的 Seedream 图生图模型 ID 或推理接入点 ID |
+| OpenAI | `OPENAI_API_KEY` | `gpt-image-1.5` | `OPENAI_IMAGE_MODEL` |
+
+使用千问：在 https://bailian.console.aliyun.com/ 登录并开通图像编辑服务，创建与北京区域匹配的 API Key，在现有 Netlify 项目的环境变量添加 `DASHSCOPE_API_KEY`，标记机密，应用到 Functions / Production，保存并重新部署。登录网页选择“千问 · 图像编辑”，上传照片并确认发送同意后生成。切勿将聊天账号密码填为 API Key。
+
+使用豆包：在 https://console.volcengine.com/ark 登录并开通 Seedream 图生图模型，创建 API Key，在 Netlify 添加 `ARK_API_KEY`；如使用的不是默认模型，在 `ARK_IMAGE_MODEL` 填控制台显示的准确模型 ID / 推理接入点 ID。保存、重新部署，然后在网页选择“豆包 · Seedream”。
+
+千问使用 DashScope `aigc/multimodal-generation/generation` 图像编辑接口，发送图片与文字消息；豆包使用方舟 `/api/v3/images/generations`，发送参考图并明确禁用多图输出。千问返回的图片只从提供方域名的 HTTPS 地址下载，每次重定向都重新检查域名，下载时不转发 API 密钥；豆包优先接收 base64 图片。服务器使用 sharp 规范化国内平台返回的图片为最长边 1600 的 JPEG，避免较大的 2K PNG 超过 Functions 响应上限。原有拼豆取色、坐标、可编辑色号和导出逻辑不变。
+
+接口依据官方 SDK 的协议设计：
+- 阿里云 DashScope SDK：https://github.com/dashscope/dashscope-sdk-python/blob/main/dashscope/aigc/multimodal_conversation.py
+- 火山方舟 SDK：https://github.com/volcengine/volcengine-python-sdk/blob/master/volcenginesdkarkruntime/resources/images/images.py
+- 千问图像编辑文档：https://help.aliyun.com/zh/model-studio/qwen-image-edit-api
+
+提供方协议测试使用模拟响应；真实出图、账号区域/模型权限、额度以及生产网络访问仍需添加相应密钥后验证。仅发现密钥已配置不代表模型授权已通过。原有全站及每用户每日次数限制对所有平台共用，不会因为切换平台重新获得额度。
