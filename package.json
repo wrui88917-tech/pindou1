@@ -16,7 +16,6 @@
   },
   "type": "module",
   "dependencies": {
-    "@netlify/blobs": "11.1.6",
-    "sharp": "0.35.5"
+    "@netlify/blobs": "11.1.6"
   }
 }

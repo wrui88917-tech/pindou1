@@ -1,4 +1,0 @@
-import {getCartoonStore} from '../../server/cartoon.mjs';
-export function createCleanup(storeProvider=getCartoonStore){return async function cleanup(){const store=storeProvider(),now=Date.now();let removed=0;for await(const page of store.list({prefix:'jobs/',paginate:true})){for(const item of page.blobs){const job=await store.get(item.key,{type:'json'});if(job&&job.expiresAt<=now){await store.delete(item.key);removed++;}}}const cutoff=new Date(now-7*86400000).toISOString().slice(0,10);for await(const page of store.list({prefix:'quota/',paginate:true})){for(const item of page.blobs)if(item.key.split('/')[1]<cutoff){await store.delete(item.key);removed++;}}return new Response(JSON.stringify({removed}),{headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});};}
-export default createCleanup();
-export const config={schedule:'15 * * * *'};
