@@ -1,0 +1,14 @@
+// Dedicated raster layout for testing third-party chart OCR. No compatibility guarantee.
+export function drawImportChart(out,{columns,rows,cells,codeFor}){
+ if(!Number.isInteger(columns)||!Number.isInteger(rows)||columns<1||rows<1||columns>200||rows>320||cells.length!==columns*rows)throw Error('图纸尺寸无效');
+ const counts=new Map(),codes=new Map(),used=new Map();
+ for(const rgb of cells){if(!rgb)continue;const key=rgb.join(',');if(!codes.has(key)){const code=String(codeFor(key)||'').trim();if(!/^[A-Z][0-9]{1,3}$/.test(code))throw Error('请先恢复标准色号；测试导出要求字母加数字的色号。');if(used.has(code)&&used.get(code)!==key)throw Error('存在重复色号，请先修正。');used.set(code,key);codes.set(key,code);}counts.set(key,(counts.get(key)||0)+1);}
+ const unit=32,margin=48,gap=12,item=104,entries=[...counts],legendCols=Math.max(1,Math.floor(columns*unit/(item+gap))),legendRows=Math.ceil(entries.length/legendCols),bottom=margin+rows*unit;
+ out.width=Math.max(columns*unit+margin*2,360);out.height=bottom+100+legendRows*68;
+ const c=out.getContext('2d');c.fillStyle='#ffffff';c.fillRect(0,0,out.width,out.height);c.textAlign='center';c.textBaseline='middle';
+ cells.forEach((rgb,i)=>{if(!rgb)return;const x=margin+i%columns*unit,y=margin+Math.floor(i/columns)*unit;c.fillStyle=`rgb(${rgb})`;c.fillRect(x,y,unit,unit);c.fillStyle=rgb[0]*.299+rgb[1]*.587+rgb[2]*.114>145?'#111111':'#ffffff';c.font='bold 13px Arial, sans-serif';c.fillText(codes.get(rgb.join(',')),x+unit/2,y+unit/2,unit-4);});
+ for(const [n,horizontal] of [[columns,false],[rows,true]])for(let i=0;i<=n;i++){c.beginPath();c.strokeStyle=i%5===0?'#ec6262':'#cad1da';c.lineWidth=i%10===0?1.6:.6;c.setLineDash(i%5===0&&i%10!==0?[5,4]:[]);if(horizontal){c.moveTo(margin,margin+i*unit);c.lineTo(margin+columns*unit,margin+i*unit);}else{c.moveTo(margin+i*unit,margin);c.lineTo(margin+i*unit,bottom);}c.stroke();if(i<n){c.fillStyle='#65738a';c.font='11px Arial, sans-serif';if(horizontal){c.fillText(i+1,margin-20,margin+(i+.5)*unit);c.fillText(i+1,margin+columns*unit+20,margin+(i+.5)*unit);}else{c.fillText(i+1,margin+(i+.5)*unit,margin-20);c.fillText(i+1,margin+(i+.5)*unit,bottom+20);}}}
+ c.setLineDash([]);c.font='14px Arial, sans-serif';c.fillStyle='#263123';const total=[...counts.values()].reduce((a,b)=>a+b,0);c.fillText(`${columns} x ${rows} / ${entries.length} colors / ${total} beads`,out.width/2,bottom+52);
+ entries.forEach(([key,n],i)=>{const x=margin+i%legendCols*(item+gap),y=bottom+76+Math.floor(i/legendCols)*68,rgb=key.split(',').map(Number);c.fillStyle=`rgb(${key})`;c.fillRect(x,y,item,30);c.fillStyle=rgb[0]*.299+rgb[1]*.587+rgb[2]*.114>145?'#111':'#fff';c.font='bold 16px Arial, sans-serif';c.fillText(codes.get(key),x+item/2,y+15);c.fillStyle='#263123';c.font='bold 15px Arial, sans-serif';c.fillText(n,x+item/2,y+46);});
+ return {columns,rows,total,empty:cells.length-total,colors:entries.map(([key,count])=>({code:codes.get(key),rgb:key,count}))};
+}
