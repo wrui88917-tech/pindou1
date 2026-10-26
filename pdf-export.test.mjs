@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createChartPDF} from './pdf-export.js';
+import {makeFixture,fixturePalette} from './tools/aidoucang/fixture.mjs';
+const codeFor=key=>Object.keys(fixturePalette).find(code=>fixturePalette[code].join(',')===key);
+test('vector PDF retains exact fixture code counts and explicit 12x12 metadata',()=>{const pdf=new TextDecoder().decode(createChartPDF({...makeFixture(),codeFor}));assert.ok(pdf.startsWith('%PDF-1.4'));assert.ok(pdf.includes('12x12 / 3 colors / 52 beads'));for(const [code,count] of [['H7',22],['E6',29],['H2',1]])assert.equal(pdf.split(`(${code}) Tj`).length-1,count+1);assert.ok(!pdf.includes('/Subtype /Image'));const offset=Number(pdf.match(/startxref\n(\d+)/)[1]);assert.ok(pdf.slice(offset).startsWith('xref\n'));const positions=[...pdf.matchAll(/(\d{10}) 00000 n/g)].map(match=>Number(match[1]));positions.forEach((position,i)=>assert.ok(pdf.slice(position).startsWith(`${i+1} 0 obj`)));});
+test('PDF rejects oversized or malformed data and ambiguous codes',()=>{assert.throws(()=>createChartPDF({columns:120,rows:1,cells:Array(120).fill(null),codeFor}));assert.throws(()=>createChartPDF({columns:12,rows:12,cells:[],codeFor}));assert.throws(()=>createChartPDF({...makeFixture(),codeFor:()=>''}));assert.throws(()=>createChartPDF({...makeFixture(),codeFor:()=> 'A1'}));assert.throws(()=>createChartPDF({...makeFixture(),codeFor:()=> '中文'}));});
+test('PDF string syntax is escaped for user-provided ASCII codes',()=>{const pdf=new TextDecoder().decode(createChartPDF({columns:1,rows:1,cells:[[10,20,30]],codeFor:()=>'(x)\\'}));assert.ok(pdf.includes('(\\(x\\)\\\\) Tj'));});

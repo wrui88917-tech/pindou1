@@ -1,3 +1,4 @@
+import {createChartPDF} from './pdf-export.js';
 import {makeFixture,fixturePalette} from './tools/aidoucang/fixture.mjs';
 import {drawImportChart} from './import-chart.js';
 import {MARD_GROUPS,MARD_COLORS,compareBeadCodes,mapToBeadPalette} from './mard-palette.js';
@@ -14,7 +15,7 @@ const colorNames=new Map();
 let numberingMode='default',numberingUndo=null;
 let redrawTimer;
 let chartReady=false;
-function setChartReady(ready){chartReady=ready;for(const id of ['download','share','export-import','export-grid','csv'])$(id).disabled=!ready;}
+function setChartReady(ready){chartReady=ready;for(const id of ['download','download-pdf','share','export-import','export-grid','csv'])$(id).disabled=!ready;}
 function requireShopExport(){if(!chartReady){$('status').textContent='请先成功生成图纸，再导出。';return false;}const plan=shopBoardPlan(columns,rows);if(!plan.fits){$('status').textContent=`当前图纸${columns}列×${rows}行，超过店里3号板108×108。请选择店内板型后重新生成；不要仅缩小图片像素。`;return false;}return true;}
 
 let source=document.createElement('canvas'),cells=[],columns=48,rows=48,colors=[],mode='pattern',beadCount=0,patternWidth=48,patternHeight=48;
@@ -89,3 +90,5 @@ function downloadTestChart(coordinates=false){const palette=fixturePalette,fixtu
 
 $('download-test-chart').onclick=()=>downloadTestChart(false);
 $('download-test-white').onclick=()=>downloadTestChart(true);
+
+$('download-pdf').onclick=()=>{if(!requireShopExport())return;try{const bytes=createChartPDF({columns,rows,cells,codeFor:listCodeFor});download(new Blob([bytes],{type:'application/pdf'}),`豆格-${columns}列-${rows}行-拼豆图纸.pdf`);$('status').textContent=`已导出${columns}列×${rows}行矢量PDF，含格内色号、坐标和用量清单。AI豆仓PDF导入兼容性尚待验证。`;}catch(error){$('status').textContent=error.message;}};
