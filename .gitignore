@@ -9,3 +9,7 @@ server/admin-html.mjs
 /豆格*.html
 /index-mobile.html
 /bead-source.txt
+
+/public/aidoucang-local-test.zip
+/tools/aidoucang/results/
+/tools/aidoucang/.browser-profile/

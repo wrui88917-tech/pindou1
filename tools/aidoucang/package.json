@@ -1,0 +1,7 @@
+{
+  "name": "aidoucang-local-check",
+  "private": true,
+  "type": "module",
+  "scripts": {"start": "node run.mjs"},
+  "dependencies": {"playwright": "1.64.1"}
+}

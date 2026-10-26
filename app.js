@@ -1,3 +1,4 @@
+import {makeFixture,fixturePalette} from './tools/aidoucang/fixture.mjs';
 import {drawImportChart} from './import-chart.js';
 import {MARD_GROUPS,MARD_COLORS,compareBeadCodes,mapToBeadPalette} from './mard-palette.js';
 import {dominantGrid,reducePalette,suggestColorNumbers,fitGridToBoard} from './quantize.js';
@@ -80,7 +81,7 @@ function renderMardChart(){const host=$('mard-chart');host.replaceChildren();con
 
 $('export-import').onclick=()=>{try{const out=document.createElement('canvas');drawImportChart(out,{columns,rows,cells,codeFor:listCodeFor});out.toBlob(blob=>{if(blob){download(blob,`豆格-${columns}x${rows}-图纸导入测试.png`);$('status').textContent='已导出高清测试 PNG。请使用 AI 豆仓“图纸导入”，核对行列数及每种色号用量；兼容性尚待实测。'}else $('status').textContent='导出失败，请减少图纸尺寸。';},'image/png');}catch(error){$('status').textContent=error.message;}};
 
-function downloadTestChart(labelStyle='color'){const palette={H7:[0,0,0],E6:MARD_COLORS.find(item=>item.code==='E6').rgb,H2:[254,255,255]},lines=['............','..HH....HH..','.HEEH..HEEH.','.HEEEHHEEEH.','.HEEEEEEEEH.','..HEEEEEEH..','...HEEEEH...','....HEEH....','.....HH.....','............','............','............'];const fixture=lines.join('').split('').map(c=>c==='.'?null:palette[c==='H'?'H7':'E6']);fixture[39]=palette.H2;const out=document.createElement('canvas');drawImportChart(out,{columns:12,rows:12,cells:fixture,labelStyle,codeFor:key=>Object.keys(palette).find(code=>palette[code].join(',')===key)});out.toBlob(blob=>{if(blob){download(blob,`AI豆仓-12x12-V3-${labelStyle==='white'?'白底标签':'标准色值'}.png`);$('status').textContent='测试图：12列×12行，H7 22颗、E6 29颗、H2 1颗，共52颗，空白92格。请上传AI豆仓“图纸导入”核对。'}else $('status').textContent='测试图下载失败，请重试。';},'image/png');};
+function downloadTestChart(labelStyle='color'){const palette=fixturePalette,fixture=makeFixture();const out=document.createElement('canvas');drawImportChart(out,{...fixture,labelStyle,codeFor:key=>Object.keys(palette).find(code=>palette[code].join(',')===key)});out.toBlob(blob=>{if(blob){download(blob,`AI豆仓-12x12-V3-${labelStyle==='white'?'白底标签':'标准色值'}.png`);$('status').textContent='测试图：12列×12行，H7 22颗、E6 29颗、H2 1颗，共52颗，空白92格。请上传AI豆仓“图纸导入”核对。'}else $('status').textContent='测试图下载失败，请重试。';},'image/png');};
 
 $('download-test-chart').onclick=()=>downloadTestChart('color');
 $('download-test-white').onclick=()=>downloadTestChart('white');

@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {makeFixture,expected,fixturePalette} from './fixture.mjs';
+import {readDimensions,readBlankCounts,assessResult} from './report.mjs';
+test('fixture uses correct E6 and exact white/black/pink/empty counts',()=>{const {cells}=makeFixture();assert.equal(cells.length,144);assert.equal(cells.filter(x=>!x).length,92);for(const [code,n] of Object.entries(expected.colors))assert.equal(cells.filter(x=>x?.join(',')===fixturePalette[code].join(',')).length,n);assert.deepEqual(fixturePalette.E6,[241,61,116]);});
+test('reads preview grid and blank comparison without using filename dimensions',()=>{assert.deepEqual(readDimensions('原图12 x 12\n网格\n10 × 13\n图例3种52颗'),{rows:10,columns:13});assert.equal(readDimensions('原图12x12 52 beads'),null);assert.deepEqual(readBlankCounts('应识别 78 个 · 已识别 78 个'),{expected:78,actual:78});});
+test('all consistent colors cannot pass when grid/empty missing or wrong',()=>{const colors=Object.fromEntries(Object.keys(expected.colors).map(c=>[c,{state:'一致'}]));assert.equal(assessResult(expected,{colors}).status,'incomplete');assert.equal(assessResult(expected,{colors,dimensions:{rows:10,columns:13},blankCounts:{expected:78,actual:78}}).status,'fail');assert.equal(assessResult(expected,{colors,dimensions:{rows:12,columns:12},blankCounts:{expected:92,actual:92},errors:0}).status,'pass');});
+test('previous E5 substitution and unknown nodes never pass',()=>{assert.equal(assessResult(expected,{colors:{E6:{state:'少',difference:29}}}).status,'fail');assert.equal(assessResult(expected,{colors:{E6:{state:'未知'}}}).status,'incomplete');});
