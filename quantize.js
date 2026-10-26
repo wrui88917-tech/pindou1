@@ -47,3 +47,9 @@ export function fitGridToBoard(pattern,width,height,boardWidth,boardHeight,{shri
  for(let y=0;y<h;y++)for(let x=0;x<w;x++)cells[(offsetY+y)*boardWidth+offsetX+x]=grid[y*w+x];
  return {cells,patternWidth:w,patternHeight:h,offsetX,offsetY};
 }
+
+export function shopBoardPlan(columns,rows){
+ if(![columns,rows].every(n=>Number.isInteger(n)&&n>0))throw Error('图纸行列数无效');
+ const size=[52,78,108].find(size=>columns<=size&&rows<=size);
+ return {columns,rows,capacity:columns*rows,fits:!!size,boardNumber:size?[52,78,108].indexOf(size)+1:null,boardSize:size||null};
+}

@@ -10,3 +10,14 @@ test('local color numbering is short, unique, deterministic and grouped by color
 test('chart sampling ignores cell borders and keeps transparent cells empty',()=>{const w=10,h=5,data=new Uint8ClampedArray(w*h*4);for(let y=0;y<h;y++)for(let x=0;x<5;x++){const i=(y*w+x)*4;data.set(x===0||x===4||y===0||y===4?[0,0,0,255]:[255,0,0,255],i);}assert.deepEqual(dominantGrid(data,w,h,2,1,{inset:.2,transparentEmpty:true}),[[255,0,0],null]);});
 test('35 by 39 chart fits a 52 board without resampling or counting padding as beads',async()=>{const {fitGridToBoard}=await import('./quantize.js');const pattern=Array(35*39).fill(null);pattern[0]=[255,0,0];pattern[35*39-1]=[0,0,0];const result=fitGridToBoard(pattern,35,39,52,52);assert.equal(result.cells.length,2704);assert.equal(result.offsetX,8);assert.equal(result.offsetY,6);assert.equal(result.patternWidth,35);assert.equal(result.patternHeight,39);assert.equal(result.cells.filter(Boolean).length,2);assert.deepEqual(result.cells[6*52+8],[255,0,0]);assert.deepEqual(result.cells[(6+38)*52+8+34],[0,0,0]);});
 test('board presets have exact capacity and oversized charts require explicit shrink',async()=>{const {fitGridToBoard}=await import('./quantize.js');for(const size of [52,78,108])assert.equal(fitGridToBoard([[255,0,0]],1,1,size,size).cells.length,size*size);assert.throws(()=>fitGridToBoard(Array(100).fill([0,0,0]),10,10,5,5),/超过/);const small=fitGridToBoard(Array(100).fill([0,0,0]),10,10,5,5,{shrink:true});assert.equal(small.patternWidth,5);assert.equal(small.cells.filter(Boolean).length,25);});
+
+test('shop board choice uses both dimensions and rejects long or oversized charts',async()=>{
+ const {shopBoardPlan}=await import('./quantize.js');
+ assert.equal(shopBoardPlan(35,39).boardNumber,1);
+ assert.equal(shopBoardPlan(49,59).boardNumber,2);
+ assert.equal(shopBoardPlan(108,108).boardNumber,3);
+ assert.equal(shopBoardPlan(52,52).capacity,2704);
+ assert.equal(shopBoardPlan(120,40).fits,false);
+ assert.equal(shopBoardPlan(120,120).fits,false);
+ assert.throws(()=>shopBoardPlan(0,52));
+});

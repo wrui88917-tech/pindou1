@@ -22,3 +22,5 @@
 .chart-color-input{width:100%;padding:9px;border:1px solid #dce3d1;border-radius:6px;background:white;font-size:14px;color:#36432c}@media(max-width:800px){.chart-color-input{font-size:16px;min-height:44px}}
 
 .compat-tests{margin:20px;padding:16px;border:1px solid #dbe3ce;border-radius:12px;background:#fff}.compat-tests summary{cursor:pointer;font-weight:600}.compat-tests p{font-size:13px;line-height:1.7;color:#65715e}.compat-tests label{font-size:13px}.compat-tests .save-actions{margin-top:12px;flex-wrap:wrap}
+
+.shop-guide{margin:12px 20px;padding:14px 16px;border:1px solid #cbd8ba;border-radius:10px;background:#f4f8ed;color:#415637;font-size:13px;line-height:1.8}
