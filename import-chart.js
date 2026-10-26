@@ -1,8 +1,8 @@
 // Raster chart for third-party OCR tests. Recognition must be checked on the target site.
-export function drawImportChart(out,{columns,rows,cells,codeFor,labelStyle='color',coordinates=true}){
+export function drawImportChart(out,{columns,rows,cells,codeFor,labelStyle='color',coordinates=true,strictCodes=true}){
  if(!Number.isInteger(columns)||!Number.isInteger(rows)||columns<1||rows<1||columns>200||rows>320||cells.length!==columns*rows)throw Error('图纸尺寸无效');
  const counts=new Map(),codes=new Map(),used=new Map();
- for(const rgb of cells){if(!rgb)continue;const key=rgb.join(',');if(!codes.has(key)){const code=String(codeFor(key)||'').trim();if(!/^[A-Z][0-9]{1,3}$/.test(code))throw Error('请先恢复标准色号；测试导出要求字母加数字的色号。');if(used.has(code)&&used.get(code)!==key)throw Error('存在重复色号，请先修正。');used.set(code,key);codes.set(key,code);}counts.set(key,(counts.get(key)||0)+1);}
+ for(const rgb of cells){if(!rgb)continue;const key=rgb.join(',');if(!codes.has(key)){const code=String(codeFor(key)||'').trim();if(strictCodes?!/^[A-Z][0-9]{1,3}$/.test(code):!/^\S{1,8}$/u.test(code))throw Error('请先恢复有效色号；测试PNG要求字母加数字，图片型PDF编号最多8个非空字符。');if(used.has(code)&&used.get(code)!==key)throw Error('存在重复色号，请先修正。');used.set(code,key);codes.set(key,code);}counts.set(key,(counts.get(key)||0)+1);}
  const unit=48,margin=coordinates?64:32,gap=16,item=104,entries=[...counts],legendCols=Math.max(1,Math.floor(columns*unit/(item+gap))),legendRows=Math.ceil(entries.length/legendCols),bottom=margin+rows*unit;
  const legendTop=bottom+112;
  out.width=Math.max(columns*unit+margin*2,360);out.height=legendTop+legendRows*72+56;
