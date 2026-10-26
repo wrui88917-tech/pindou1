@@ -1,18 +1,19 @@
 // Count quantized source colors, never average neighboring pixels.
-export function dominantGrid(data,width,height,columns,rows){
+export function dominantGrid(data,width,height,columns,rows,{inset=0,transparentEmpty=false}={}){
  const cells=[];
  for(let row=0;row<rows;row++)for(let col=0;col<columns;col++){
-  const votes=new Map();
-  const x0=Math.floor(col*width/columns),x1=Math.floor((col+1)*width/columns);
-  const y0=Math.floor(row*height/rows),y1=Math.floor((row+1)*height/rows);
+  const votes=new Map();let transparent=0,total=0;
+  let x0=Math.floor(col*width/columns),x1=Math.floor((col+1)*width/columns);
+  let y0=Math.floor(row*height/rows),y1=Math.floor((row+1)*height/rows);
+  const dx=Math.min(Math.floor((x1-x0)*inset),Math.floor((x1-x0-1)/2)),dy=Math.min(Math.floor((y1-y0)*inset),Math.floor((y1-y0-1)/2));x0+=dx;x1-=dx;y0+=dy;y1-=dy;
   for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){
-   const i=(y*width+x)*4,a=data[i+3]/255;
+   const i=(y*width+x)*4,a=data[i+3]/255;total++;if(transparentEmpty&&a<.1){transparent++;continue;}
    const rgb=[0,1,2].map(k=>Math.round((data[i+k]*a+255*(1-a))/8)*8).map(v=>Math.min(255,v));
    const key=rgb.join(',');votes.set(key,(votes.get(key)||0)+1);
   }
   let winner='255,255,255',count=0;
   for(const [key,n] of votes)if(n>count){winner=key;count=n;}
-  cells.push(winner.split(',').map(Number));
+  cells.push(transparentEmpty&&transparent>=total/2?null:winner.split(',').map(Number));
  }
  return cells;
 }
@@ -36,4 +37,13 @@ export function suggestColorNumbers(keys){
  const entries=[...new Set(keys)].map(key=>({key,rank:rank(key)}));
  entries.sort((a,b)=>{for(let i=0;i<a.rank.length;i++){const difference=a.rank[i]-b.rank[i];if(difference)return difference;}return 0;});
  return new Map(entries.map(({key},i)=>[key,String(i+1)]));
+}
+
+export function fitGridToBoard(pattern,width,height,boardWidth,boardHeight,{shrink=false}={}){
+ if(![width,height,boardWidth,boardHeight].every(n=>Number.isInteger(n)&&n>0)||pattern.length!==width*height)throw Error('网格尺寸无效');
+ let w=width,h=height,grid=pattern;
+ if(w>boardWidth||h>boardHeight){if(!shrink)throw Error('图案超过所选拼豆板，请换大板或允许等比缩小。');const scale=Math.min(boardWidth/w,boardHeight/h);w=Math.max(1,Math.floor(w*scale));h=Math.max(1,Math.floor(h*scale));grid=[];for(let row=0;row<h;row++)for(let col=0;col<w;col++){const votes=new Map();for(let y=Math.floor(row*height/h);y<Math.floor((row+1)*height/h);y++)for(let x=Math.floor(col*width/w);x<Math.floor((col+1)*width/w);x++){const rgb=pattern[y*width+x],key=rgb?rgb.join(','):'empty';const previous=votes.get(key);votes.set(key,{rgb,count:(previous?.count||0)+1});}let winner=null,count=-1;for(const value of votes.values())if(value.count>count){winner=value.rgb;count=value.count;}grid.push(winner);}}
+ const offsetX=Math.floor((boardWidth-w)/2),offsetY=Math.floor((boardHeight-h)/2),cells=Array(boardWidth*boardHeight).fill(null);
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++)cells[(offsetY+y)*boardWidth+offsetX+x]=grid[y*w+x];
+ return {cells,patternWidth:w,patternHeight:h,offsetX,offsetY};
 }
