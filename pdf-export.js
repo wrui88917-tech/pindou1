@@ -27,3 +27,23 @@ export function createChartPDF({columns,rows,cells,codeFor}){
  let pdf='%PDF-1.4\n',offsets=[0];objects.forEach((body,i)=>{offsets.push(pdf.length);pdf+=`${i+1} 0 obj\n${body}\nendobj\n`;});const xref=pdf.length;pdf+=`xref\n0 ${objects.length+1}\n0000000000 65535 f \n`+offsets.slice(1).map(offset=>`${String(offset).padStart(10,'0')} 00000 n \n`).join('');pdf+=`trailer\n<< /Size ${objects.length+1} /Root 1 0 R /Info 6 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
  return new TextEncoder().encode(pdf);
 }
+
+// Image-only variant: exactly one RGB image per page, with no PDF font or text operators.
+export async function createImagePDF({width,height,rgba}){
+ if(![width,height].every(n=>Number.isInteger(n)&&n>0&&n<=10000)||rgba.length!==width*height*4)throw Error('PDF图片数据无效。');
+ const rgb=new Uint8Array(width*height*3);
+ for(let i=0,j=0;i<rgba.length;i+=4,j+=3){const alpha=rgba[i+3]/255;for(let k=0;k<3;k++)rgb[j+k]=Math.round(rgba[i+k]*alpha+255*(1-alpha));}
+ let data=rgb,filter='';
+ if(typeof CompressionStream!=='undefined'){data=new Uint8Array(await new Response(new Blob([rgb]).stream().pipeThrough(new CompressionStream('deflate'))).arrayBuffer());filter=' /Filter /FlateDecode';}
+ const encode=value=>new TextEncoder().encode(value),pageWidth=width*.5,pageHeight=height*.5,content=`q\n${pageWidth} 0 0 ${pageHeight} 0 0 cm\n/Im0 Do\nQ\n`;
+ const chunks=[encode('%PDF-1.4\n')],offsets=[0];let length=chunks[0].length;
+ const append=part=>{chunks.push(part);length+=part.length;};
+ const object=(id,parts)=>{offsets.push(length);append(encode(`${id} 0 obj\n`));for(const part of parts)append(typeof part==='string'?encode(part):part);append(encode('\nendobj\n'));};
+ object(1,['<< /Type /Catalog /Pages 2 0 R >>']);
+ object(2,['<< /Type /Pages /Kids [3 0 R] /Count 1 >>']);
+ object(3,[`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /XObject << /Im0 5 0 R >> >> /Contents 4 0 R >>`]);
+ object(4,[`<< /Length ${encode(content).length} >>\nstream\n${content}endstream`]);
+ object(5,[`<< /Type /XObject /Subtype /Image /Width ${width} /Height ${height} /ColorSpace /DeviceRGB /BitsPerComponent 8${filter} /Length ${data.length} >>\nstream\n`,data,'\nendstream']);
+ const xref=length;append(encode('xref\n0 6\n0000000000 65535 f \n'+offsets.slice(1).map(offset=>`${String(offset).padStart(10,'0')} 00000 n \n`).join('')+`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`));
+ const pdf=new Uint8Array(length);let cursor=0;for(const chunk of chunks){pdf.set(chunk,cursor);cursor+=chunk.length;}return pdf;
+}
