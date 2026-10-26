@@ -9,7 +9,8 @@
     "build": "node build-auth.mjs",
     "prestart": "node build-auth.mjs",
     "predev": "node build-auth.mjs",
-    "pretest": "node build-auth.mjs"
+    "pretest": "node build-auth.mjs",
+    "build:offline": "node build-offline.mjs"
   },
   "engines": {
     "node": ">=20"
