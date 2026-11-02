@@ -1,0 +1,11 @@
+{
+  "name": "nintendo-1889",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.9.3 preview",
+    "check": "npx --yes hyperframes@0.9.3 check",
+    "render": "npx --yes hyperframes@0.9.3 render --fps 24 --quality high --video-bitrate 5M --workers 3 --output nintendo-1889-120s-4k.mp4",
+    "publish": "npx --yes hyperframes@0.9.3 publish"
+  }
+}
