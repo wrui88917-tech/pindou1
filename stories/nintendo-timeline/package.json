@@ -1,0 +1,9 @@
+{
+  "name": "nintendo-timeline",
+  "private": true,
+  "scripts": {
+    "check": "npx --yes hyperframes@0.9.3 check",
+    "dev": "npx --yes hyperframes@0.9.3 preview",
+    "render": "npx --yes hyperframes@0.9.3 render --fps 24 --video-bitrate 4500k --output nintendo-timeline.mp4"
+  }
+}
