@@ -3,7 +3,7 @@
 ## 蛛网都市 · 原图体感景深预览 v2
 
 - [下载新版安卓 APK](exports/spider-cinematic-preview-v2.apk)（Android 8.0 及以上）
-- [下载单文件网页预览](exports/spider-cinematic-preview.html)
+- [在线网页预览（GitHack 渲染入口）](https://raw.githack.com/wrui88917-tech/pindou1/main/exports/spider-cinematic-preview.html) · [下载 HTML 文件](exports/spider-cinematic-preview.html)
 - [下载新版源码](exports/spider-cinematic-v2-source.zip) · [使用与构建说明](wallpapers/spider-tilt/README.md)
 
 选择自己的原图后，保留照片细节并加入轻幅体感景深和细雨。支持 2K 画布、灵敏度调节、重新校准和省电模式。本版为 2.5D 预览，不支持 360° 绕看角色；图一尚未内置，需要从手机中选择原图。v1 的低多边形人物已从当前应用源码移除。
