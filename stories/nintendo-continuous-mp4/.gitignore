@@ -1,0 +1,6 @@
+frames/
+audio.wav
+*.mp4
+contact-sheet.jpg
+validation.json
+node_modules/
