@@ -1,12 +1,12 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.pindou.spidertilt" android:versionCode="1" android:versionName="1.0">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.pindou.spidertilt" android:versionCode="2" android:versionName="2.0">
  <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35"/>
  <uses-feature android:name="android.software.live_wallpaper" android:required="true"/>
  <uses-feature android:name="android.hardware.sensor.gyroscope" android:required="false"/>
- <application android:label="蜘蛛侠 · 体感3D" android:icon="@drawable/icon" android:theme="@android:style/Theme.Material.NoActionBar" android:allowBackup="false" android:supportsRtl="true">
+ <application android:label="蛛网都市 · 电影景深" android:icon="@drawable/icon" android:theme="@android:style/Theme.Material.NoActionBar" android:allowBackup="false" android:supportsRtl="true">
   <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="portrait">
    <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
   </activity>
-  <service android:name=".SpiderWallpaper" android:label="蜘蛛侠 · 体感3D" android:permission="android.permission.BIND_WALLPAPER" android:exported="true">
+  <service android:name=".SpiderWallpaper" android:label="蛛网都市 · 电影景深" android:permission="android.permission.BIND_WALLPAPER" android:exported="true">
    <intent-filter><action android:name="android.service.wallpaper.WallpaperService"/></intent-filter>
    <meta-data android:name="android.service.wallpaper" android:resource="@xml/wallpaper"/>
   </service>

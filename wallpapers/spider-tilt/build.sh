@@ -6,6 +6,7 @@ platform_jar="${ANDROID_PLATFORM_JAR:-$toolchain/platform/android-35/android.jar
 build_tools="${ANDROID_BUILD_TOOLS:-$toolchain/build-tools/android-15}"
 compiler="${ECJ_JAR:-$toolchain/ecj.jar}"
 signing="${SPIDER_SIGNING_DIR:-/workspace/.pindou-android-signing}"
+rm -rf build/classes build/gen build/dex
 mkdir -p build/classes build/gen build/dex "$signing"
 chmod 700 "$signing"
 chmod +x "$build_tools/aapt2" "$build_tools/zipalign"

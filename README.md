@@ -1,12 +1,12 @@
 # pindou1
 
-## 蜘蛛侠 · 安卓体感3D动态壁纸
+## 蛛网都市 · 原图体感景深预览 v2
 
-- [下载 APK](exports/spider-tilt-3d.apk)（Android 8.0 及以上）
-- [查看转动前后预览](exports/spider-tilt-preview.png)
-- [下载源码](exports/spider-tilt-source.zip) · [使用与构建说明](wallpapers/spider-tilt/README.md)
+- [下载新版安卓 APK](exports/spider-cinematic-preview-v2.apk)（Android 8.0 及以上）
+- [下载单文件网页预览](exports/spider-cinematic-preview.html)
+- [下载新版源码](exports/spider-cinematic-v2-source.zip) · [使用与构建说明](wallpapers/spider-tilt/README.md)
 
-手机倾斜会改变人物与城市的三维透视；支持原生 2K 画布、灵敏度调节、重新校准和省电模式。非官方低多边形粉丝作品。
+选择自己的原图后，保留照片细节并加入轻幅体感景深和细雨。支持 2K 画布、灵敏度调节、重新校准和省电模式。本版为 2.5D 预览，不支持 360° 绕看角色；图一尚未内置，需要从手机中选择原图。v1 的低多边形人物已从当前应用源码移除。
 
 ## 任天堂冷知识 · 连续可视化 MP4 新版
 

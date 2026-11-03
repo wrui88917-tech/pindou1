@@ -1,42 +1,47 @@
-# 蜘蛛侠 · 体感3D Android 动态壁纸
+# 蛛网都市 · 电影景深（Android v2）
 
-可安装的 Android 动态壁纸，适用于 Android 8.0 及以上。手机转动会改变人物和城市的真实透视投影，不是视频循环或静态图片平移。造型采用原创程序化低多边形模型，属于非官方粉丝作品。
+本版保留用户选择的照片细节，通过轻幅深度网格、体感输入和独立细雨层生成壁纸。原来的低多边形人物已移除。它属于照片深度视差（2.5D），不是能够绕看背面的完整 3D 模型。
+
+图一目前只以聊天内嵌图可见，未作为可读取的原图文件提供，所以本包没有假称已内置图一。安装后可直接从手机中选择图一，避免先上传或压缩它。
 
 ## 使用
 
-1. 安装 `spider-tilt-3d.apk`，打开“蜘蛛侠 · 体感3D”。
-2. 自然握住手机，点“以当前姿势重新校准”，倾斜手机检查预览。
-3. 点“设为动态壁纸”，在系统界面确认应用到主屏幕。
-4. 可调灵敏度（0.5–2.5 倍），或启用 20fps 省电模式；默认 30fps。
+1. 安装 v2 APK，可直接覆盖同签名的 v1。
+2. 打开“蛛网都市 · 电影景深”，点“选择壁纸原图”，选择自己的高清图片。
+3. 自然握住手机，检查体感预览；点“设为动态壁纸”，在系统中确认主屏幕。
+4. 根据图片选择“图一：斜向近景人物”“居中的人物或物件”或“整幅画面轻移”。
 
-桌面双击可重新校准，但部分启动器会拦截双击手势；这种情况下重新进入系统壁纸预览校准即可。锁屏是否允许动态壁纸由手机厂商决定，不保证所有机型支持锁屏。
+设置页向下滑可调整灵敏度、细雨、省电模式和重新归中。桌面双击也可归中，但部分启动器可能拦截这个手势。锁屏支持由手机系统决定。
 
-优先使用 game rotation vector，再回退到 rotation vector、重力或加速度传感器。无可用传感器时，桌面保留静态的 3D 视角，应用内仍可拖动预览。没有互联网、照片或存储权限，也不连接任何服务。
+图片只复制到应用私有目录，不会上传。应用没有申请网络、相册全量或存储权限；系统图片选择器只授权本次选择的图片。取消选图不会清空旧图。为控制内存，大于约 600 万像素的图片会在解码时降采样；源文件本身不重新压缩。支持常见 JPEG EXIF 方向。
 
-壁纸按系统提供的 Surface 原生像素绘制，支持 1440 像素宽的 2K 屏；实际大小与启动器分配的壁纸画布一致，不会把低分辨率素材放大。高分辨率屏幕的实际帧率取决于设备性能。壁纸不可见时停止渲染并注销传感器；静止时避免重复绘制相同画面。
+## 画质与边界
 
-## 源码
+壁纸按照系统 Surface 的原生像素绘制，支持 1440×2560 / 1440×3120 的 2K 画布。最终细节仍取决于原图；输出像素数不意味着自动补出了额外纹理。图片采用双线性纹理采样，不生成低模光照或马赛克面。
 
-- `Scene.java`：程序化人物、三维城市、透视变换、光照和深度排序。无贴图或远程资源。
-- `SceneCanvas.java`：Android Canvas 硬件画布绘制，支持软件回退。
-- `MotionMath.java` / `MotionInput.java`：相对四元数校准、传感器优先级和屏幕方向映射。
-- `SpiderWallpaper.java`：Android WallpaperService、生命周期、省电和双击校准。
-- `MainActivity.java`：原生设置、实时预览和系统壁纸选择入口。
-- `PreviewCheck.java`：复用应用的几何和传感器数学进行 JVM 测试，输出 1440×3120 的 SVG 预览。
+深度预设没有进行 AI 人体识别。“图一”预设按用户参考图的头部和斜向躯干位置配置，脸部中心使用平缓的深度平台。位移受限，画布预留约 10.5% 放大量以避免露边。大幅偏转不能真实显露原图遮挡的背景；需要精确人物遮罩与干净背景才能进一步改善分层边界。当前并未用实际图一审看所有边缘，因为缺少可读取的原图文件。
 
-## 构建
+## 代码与构建
 
-本工程没有 Gradle / AndroidX 或运行时第三方依赖。使用 Android 35 平台与 Build Tools 35.0.0、Java 运行时 21、ECJ 3.38.0 编译。`toolchain.json` 记录下载地址及官方校验值。
+- `PhotoStore.java`：私有原图导入、解码上限、EXIF 方向与共享位图缓存。
+- `DepthMath.java`：照片深度场、面部平台、网格变换和边缘预留。
+- `SceneCanvas.java`：Android 硬件 Canvas 纹理网格与细雨层。
+- `MotionMath.java` / `MotionInput.java`：相对四元数、传感器回退和校准。
+- `SpiderWallpaper.java`：Android WallpaperService、生命周期与省电。
+- `MainActivity.java`：系统图片选择、体感预览、设置和系统壁纸入口。
+- `DepthCheck.java`：复用真实网格的 JVM 测试。
+
+需要 Java 21、Python 3、Android 35 平台、Build Tools 35.0.0 与 ECJ 3.38.0。无运行时第三方依赖。
 
 ```sh
 bash setup-tools.sh
 bash build.sh
 java -jar /workspace/android-toolchain/ecj.jar -8 -warn:none -proc:none \
-  -d build/preview app/src/main/java/com/pindou/spidertilt/Scene.java \
-  app/src/main/java/com/pindou/spidertilt/MotionMath.java PreviewCheck.java
-java -cp build/preview PreviewCheck
+  -d build/depth-check app/src/main/java/com/pindou/spidertilt/DepthMath.java \
+  app/src/main/java/com/pindou/spidertilt/MotionMath.java DepthCheck.java
+java -cp build/depth-check DepthCheck
 ```
 
-默认工具在 `/workspace/android-toolchain`。可用 `ANDROID_TOOLCHAIN`、`ANDROID_PLATFORM_JAR`、`ANDROID_BUILD_TOOLS`、`ECJ_JAR` 指定其他安装位置。可用 `SPIDER_SIGNING_DIR` 指定私有签名目录；签名材料不包含在源码包中。保留原签名密钥才能以覆盖安装方式更新已安装的 APK。
+默认工具位于 `/workspace/android-toolchain`，可用 `ANDROID_TOOLCHAIN` 等变量覆盖，详见构建脚本。签名目录通过 `SPIDER_SIGNING_DIR` 指定；签名密钥不包含在源码包。保留原签名密钥才能覆盖安装已发布版本。
 
-安装到本地测试模拟器：`adb install -r build/spider-tilt-3d.apk`。这只需要本地 Android SDK，不需要 Google 账户。
+配套网页预览在 `../spider-cinematic-preview/`，同样可由用户选择原图，无服务器上传。

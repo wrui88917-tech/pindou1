@@ -1,30 +1,27 @@
 package com.pindou.spidertilt;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.LinearGradient;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.RadialGradient;
-import android.graphics.Shader;
+import android.os.SystemClock;
 import java.util.Random;
 
 final class SceneCanvas {
- private final Scene scene=new Scene();private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);private final Path path=new Path();
- private int width,height;private Shader sky,glow,lowerGlow;private final float[] stars=new float[180];
- SceneCanvas(){Random random=new Random(88917);for(int i=0;i<stars.length;i++)stars[i]=random.nextFloat();}
+ private static final int COLUMNS=48,ROWS=96;
+ private final Context context;private final SharedPreferences prefs;private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG|Paint.DITHER_FLAG);
+ private final float[] mesh=new float[(COLUMNS+1)*(ROWS+1)*2],rain=new float[400];
+ SceneCanvas(Context context){this.context=context.getApplicationContext();prefs=context.getSharedPreferences("wallpaper",Context.MODE_PRIVATE);Random random=new Random(1989);for(int i=0;i<rain.length;i++)rain[i]=random.nextFloat();}
+ boolean hasPhoto(){return PhotoStore.hasPhoto(context);}
+ boolean animated(){return hasPhoto()&&prefs.getBoolean("rain",true);}
  void draw(Canvas c,int w,int h,float yaw,float pitch,float roll){
-  if(w<=0||h<=0)return;
-  if(w!=width||h!=height){width=w;height=h;sky=new LinearGradient(0,0,0,h,new int[]{0xff020713,0xff0d2540,0xff12283c,0xff050c18},null,Shader.TileMode.CLAMP);glow=new RadialGradient(w*.80f,h*.28f,w*.9f,new int[]{0x504083a7,0x00152640},null,Shader.TileMode.CLAMP);lowerGlow=new RadialGradient(w*.13f,h*.65f,w*.8f,new int[]{0x554a1935,0x00081223},null,Shader.TileMode.CLAMP);}
-  paint.setStyle(Paint.Style.FILL);paint.setShader(sky);c.drawRect(0,0,w,h,paint);paint.setShader(glow);c.drawRect(0,0,w,h,paint);paint.setShader(lowerGlow);c.drawRect(0,0,w,h,paint);paint.setShader(null);
-  for(int i=0;i<stars.length;i+=3){paint.setColor(Color.argb((int)(45+stars[i+2]*95),160,199,221));c.drawCircle(stars[i]*w-yaw*12,stars[i+1]*h*.48f+pitch*10,.6f+stars[i+2]*w*.001f,paint);}
-  // A small moon and a soft halo occupy the distant sky, leaving room for icons.
-  float moonX=w*.81f-yaw*18,moonY=h*.18f+pitch*12;paint.setColor(0x0868b7dc);c.drawCircle(moonX,moonY,w*.075f,paint);paint.setColor(0x1566a9c4);c.drawCircle(moonX,moonY,w*.048f,paint);paint.setColor(0xffbfd0d1);c.drawCircle(moonX,moonY,w*.026f,paint);
-  for(Scene.Primitive prim:scene.project(w,h,yaw,pitch,roll)){
-   if(!prim.visible)continue;path.rewind();path.moveTo(prim.xy[0],prim.xy[1]);for(int i=2;i<prim.xy.length;i+=2)path.lineTo(prim.xy[i],prim.xy[i+1]);
-   paint.setColor(prim.color);if(prim.isLine()){paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(Math.max(.65f,prim.width*w*1.6f/prim.depth));paint.setStrokeCap(Paint.Cap.ROUND);}else{path.close();paint.setStyle(Paint.Style.FILL_AND_STROKE);paint.setStrokeWidth(1.0f);}
-   c.drawPath(path,paint);
+  c.drawColor(0xff080d17);Bitmap photo=PhotoStore.get(context);if(photo==null){paint.setColor(0xffbbc6d8);paint.setTextAlign(Paint.Align.CENTER);paint.setTextSize(w*.038f);c.drawText("在应用中选择你的原图",w*.5f,h*.5f,paint);return;}
+  int preset=prefs.getInt("preset",0);DepthMath.project(photo.getWidth(),photo.getHeight(),w,h,yaw,pitch,roll,preset,COLUMNS,ROWS,mesh);paint.setColor(Color.WHITE);paint.setAlpha(255);c.drawBitmapMesh(photo,COLUMNS,ROWS,mesh,0,null,0,paint);
+  if(prefs.getBoolean("rain",true)){double time=SystemClock.uptimeMillis()/1000.0;paint.setColor(0xffbddaf4);paint.setStrokeWidth(Math.max(.8f,w*.00065f));paint.setStrokeCap(Paint.Cap.ROUND);
+   for(int i=0;i<100;i++){int k=i*4;float depth=.3f+rain[k+2]*.7f;float x=(rain[k]*1.4f-.2f)*w-yaw*w*.018f*depth;float v=(float)((rain[k+1]+time*(.14+depth*.15))%1.0),y=v*h;float len=h*(.003f+depth*.009f);paint.setAlpha((int)(18+depth*25));c.drawLine(x,y,x-len*.24f,y+len,paint);}
+   paint.setAlpha(255);
   }
-  paint.setStyle(Paint.Style.FILL);paint.setShader(new LinearGradient(0,h*.82f,0,h,new int[]{0x00030a16,0xa0030a16},null,Shader.TileMode.CLAMP));c.drawRect(0,h*.82f,w,h,paint);paint.setShader(null);
  }
 }

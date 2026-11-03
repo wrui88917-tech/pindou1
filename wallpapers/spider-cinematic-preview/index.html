@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090d17">
+<title>蛛网都市 · 电影景深预览</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+ <canvas id="wallpaper" aria-label="可通过倾斜手机或拖动改变视角的电影景深壁纸"></canvas>
+ <div id="empty" class="empty">
+  <div class="eyebrow">蛛网都市 / CINEMATIC DEPTH</div>
+  <h1>让你喜欢的画面<br>有了景深。</h1>
+  <p>载入图一或另一张高清图片，<br>轻轻倾斜手机，感受城市与人物之间的距离。</p>
+  <button id="chooseStart" class="primary">选择原图 <span>↗</span></button>
+  <small>图片只在当前设备处理，不会上传。</small>
+ </div>
+ <div id="hud" hidden>
+  <div id="hint" role="status" aria-live="polite">拖动画面预览 · 开启体感后轻轻倾斜手机</div>
+  <div id="bar" class="bar">
+   <button id="choose">换图片</button><i></i><button id="motion">开启体感</button><i></i><button id="settings" aria-expanded="false" aria-controls="panel">调整</button>
+  </div>
+  <section id="panel" class="panel" hidden>
+   <div class="panel-head"><strong>让运动恰到好处</strong><button id="close" aria-label="关闭调整面板">×</button></div>
+   <label>景深强度 <output id="strengthValue">轻柔</output><input id="strength" type="range" min="0" max="100" value="42"></label>
+   <label>画面主体 <select id="preset"><option value="reference">图一的斜向近景构图</option><option value="center">居中的人物或物件</option><option value="flat">整幅画面轻微移动</option></select></label>
+   <div class="toggles"><label><input id="rain" type="checkbox" checked> 细雨</label><label><input id="glow" type="checkbox" checked> 微光</label><label><input id="battery" type="checkbox"> 省电</label></div>
+   <div class="panel-actions"><button id="calibrate">当前姿势归中</button><button id="fullscreen">全屏观看</button></div>
+   <button id="export" class="export">保存 2K 静态画面</button>
+   <p class="note">轻幅视差可保留原图细节；不支持绕看人物背面。双击画面可显示或隐藏按钮。</p>
+  </section>
+ </div>
+ <input id="file" type="file" accept="image/*" hidden>
+ <div id="error" class="error" role="alert" hidden></div>
+ <script src="wallpaper.js"></script>
+</body></html>
